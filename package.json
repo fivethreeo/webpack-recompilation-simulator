@@ -7,7 +7,7 @@
   ],
   "main": "src/index.js",
   "scripts": {
-    "prepublish": "npm run test",
+    "prepublishOnly": "npm run test",
     "pre": "semistandard src/**/*.js test/**/*.js",
     "release": "standard-version",
     "test": "mocha --timeout 15000",
