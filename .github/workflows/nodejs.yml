@@ -14,7 +14,6 @@ jobs:
           - 12.x
           - 13.x
         webpack-version:
-          - webpack@3
           - webpack@4
           - webpack@beta
         exclude:
