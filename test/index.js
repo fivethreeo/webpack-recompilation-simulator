@@ -9,7 +9,7 @@ const fs = require("fs");
 
 
 const loaderMock = require("./loader");
-const srcDir = path.resolve(__dirname, 'src') + '/';
+const srcDir = path.resolve(__dirname, 'src') + path.sep;
 
 const webpackConfig = () => ({
   // Webpack will only cache in "development" mode
