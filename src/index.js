@@ -33,20 +33,21 @@ module.exports = class WebpackRecompilationHelper {
     this.compiler.hooks.normalModuleFactory.tap(
       "WebpackRecompilationSimulator",
       nmf => {
-        nmf.hooks.afterResolve.tapAsync(
-          "WebpackRecompilationSimulator",
-          (data, callback) => {
-            if (webpackMajorVersion >= 5) {
-              this._injectTmpLoader(data);
-            }
-            else {
+        if (webpackMajorVersion >= 5) {
+          nmf.hooks.afterResolve.tap("WebpackRecompilationSimulator",
+            (data) => {
+                this._injectTmpLoader(data);
+              }
+          );
+        } else {
+          nmf.hooks.afterResolve.tapAsync("WebpackRecompilationSimulator",
+            (data, callback) => {
               return callback(null, this._injectTmpLoader(data));
             }
-          }
-        );
+          );
+        }
       }
     );
-
   }
 
   /**
@@ -122,7 +123,9 @@ module.exports = class WebpackRecompilationHelper {
    * pass the content from the temp file to webpack
    */
   _injectTmpLoader(data) {
-    const requestParts = data.request.split("!");
+    const requestParts = webpackMajorVersion >= 5
+      ? data.createData.request.split("!")
+      : data.request.split("!");
     const requestedFile = path.resolve(data.context, requestParts.pop());
     // If a mapping from addTestFile exists add the loader
     if (this.mappings.files[requestedFile]) {
