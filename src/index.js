@@ -10,6 +10,10 @@
 const tempfs = require("temp-fs");
 const fs = require("fs");
 const path = require("path");
+const webpack = require("webpack");
+
+const webpackMajorVersion =
+  typeof webpack.version !== 'undefined' ? parseInt(webpack.version[0]) : 3;
 
 module.exports = class WebpackRecompilationHelper {
   /**
@@ -32,7 +36,12 @@ module.exports = class WebpackRecompilationHelper {
         nmf.hooks.afterResolve.tapAsync(
           "WebpackRecompilationSimulator",
           (data, callback) => {
-            return callback(null, this._injectTmpLoader(data));
+            if (webpackMajorVersion >= 5) {
+              this._injectTmpLoader(data);
+            }
+            else {
+              return callback(null, this._injectTmpLoader(data));
+            }
           }
         );
       }
@@ -117,11 +126,20 @@ module.exports = class WebpackRecompilationHelper {
     const requestedFile = path.resolve(data.context, requestParts.pop());
     // If a mapping from addTestFile exists add the loader
     if (this.mappings.files[requestedFile]) {
-      data.loaders.push({
-        loader: require.resolve('./loader.js'),
-        // The path to the temporary file
-        options: this.mappings.files[requestedFile]
-     });
+      if (webpackMajorVersion >= 5) {
+        data.createData.loaders.push({
+          loader: require.resolve('./loader.js'),
+          // The path to the temporary file
+          options: this.mappings.files[requestedFile]
+        });
+      }
+      else {
+        data.loaders.push({
+          loader: require.resolve('./loader.js'),
+          // The path to the temporary file
+          options: this.mappings.files[requestedFile]
+        });
+      }
     }
 
     return data;
